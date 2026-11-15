@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tuwaiq Club Certificates</title>
+<meta name="description" content="Tuwaiq Club certificate of appreciation generator">
+<meta name="theme-color" content="#1c0c52">
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/*FONTS*/
+:root{
+  color-scheme:dark;
+  --stage:#1c0c52;--stage-2:#2c1489;--night:#120838;--bar:#1b0f4a;--edge:#34237a;
+  --purple:#4f29b8;--lilac:#b9a6f5;--violet:#9c75ff;--teal:#57e4d9;--orange:#f4a663;--error:#ffb38a;
+  --text:#efeaff;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stage) 62%,#12073a 100%) fixed var(--stage);color:var(--text);font:14px/1.4 var(--body)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* floating Tuwaiq squares on the stage */
+.pixels{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.px{position:absolute;border-radius:24%;opacity:var(--o,.18);background:var(--c,var(--violet));animation:drift var(--d,14s) ease-in-out var(--dl,0s) infinite alternate}
+@keyframes drift{from{transform:translate3d(0,0,0) rotate(0deg)}to{transform:translate3d(var(--dx,12px),var(--dy,-26px),0) rotate(var(--r,8deg))}}
+
+.frame{position:fixed;inset:0;z-index:1}
+.scaler{position:absolute;left:0;top:0;width:1123px;height:794px;transform-origin:0 0}
+
+/* ---------- terminal ---------- */
+.tty{position:absolute;z-index:2;display:flex;flex-direction:column;background:var(--night);border-radius:14px;box-shadow:0 30px 80px rgba(8,0,40,.55),10px 12px 0 #0f0533;overflow:hidden;transition:background-color .6s ease,border-radius .6s ease;animation:ttyIn .6s cubic-bezier(.2,.9,.3,1.15) both}
+.tty.morph{transition:left .7s cubic-bezier(.6,0,.2,1),top .7s cubic-bezier(.6,0,.2,1),width .7s cubic-bezier(.6,0,.2,1),height .7s cubic-bezier(.6,0,.2,1),background-color .6s ease,border-radius .6s ease,box-shadow .6s ease}
+.tty-bar{flex:none;height:var(--bar-h,52px);display:flex;align-items:center;gap:calc(var(--dot,14px)*.6);padding:0 calc(var(--dot,14px)*1.2);background:var(--bar);border-bottom:1.5px solid var(--edge);transition:opacity .35s}
+.tty-dot{flex:none;width:var(--dot,14px);height:var(--dot,14px);border-radius:4px}
+.tty-dot:nth-child(1){background:var(--orange)}.tty-dot:nth-child(2){background:var(--violet)}.tty-dot:nth-child(3){background:var(--teal)}
+.tty-title{flex:1;min-width:0;text-align:center;font:400 calc(var(--fs,18px)*.72)/1 var(--mono);color:var(--lilac);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:calc(var(--dot,14px)*3.6)}
+.tty-out{flex:1;min-height:0;overflow-y:auto;padding:calc(var(--fs,18px)*1.1) calc(var(--fs,18px)*1.3);font:400 var(--fs,18px)/1.65 var(--mono);color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;transition:opacity .3s,transform .3s}
+.ln.muted{color:var(--lilac)}.ln.ok{color:var(--teal)}.ln.hi{color:var(--orange)}.ln.err{color:var(--error)}
+.ps{color:var(--orange);font-weight:700}.path{color:var(--teal)}
+.q{color:var(--teal);font-weight:700}.arrow{color:var(--lilac)}.answer{color:var(--orange)}
+.tty-input{font:inherit;color:var(--orange);caret-color:var(--orange);background:transparent;border:0;border-bottom:1px dashed transparent;outline:none;padding:0;margin:0;width:9ch;max-width:100%}
+.tty-input:focus-visible{border-bottom-color:var(--lilac)}
+.tty-input::placeholder{color:#7465a8}
+.choices{display:flex;flex-wrap:wrap;gap:.5em;padding:.3em 0 .2em 1.6em}
+.chip{font:inherit;font-size:.86em;min-height:34px;padding:.2em 1em;border-radius:10px;border:1.5px solid var(--teal);background:transparent;color:var(--teal);cursor:pointer;text-align:left;line-height:1.3}
+.chip:hover{background:rgba(87,228,217,.12)}
+.chip:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.cursor{display:inline-block;width:.55em;height:1.15em;background:var(--orange);vertical-align:-.2em;margin-left:1px;animation:blink 1s steps(1) infinite}
+.tty.out{background:#fff;border-radius:6px;box-shadow:0 30px 80px rgba(8,0,40,.55),0 0 0 #0f0533}
+.tty.out .tty-bar{opacity:0}
+.tty.out .tty-out{opacity:0;transform:translateY(-10px)}
+@keyframes ttyIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- certificate (1123 × 794, the Canva page size) ---------- */
+.card{position:absolute;inset:0;border-radius:6px;box-shadow:0 30px 80px rgba(8,0,40,.55);overflow:hidden;background:#fff}
+.scene{position:relative;width:1123px;height:794px;overflow:hidden;background:#fff;color:#4f29b7;font-family:"IBM Plex Sans",sans-serif}
+.scene img,.scene .abs{position:absolute;display:block}
+.base{left:0;top:0;width:1123px;height:794px;animation:fade .7s ease-out both}
+.drop{animation:drop .7s cubic-bezier(.2,.9,.3,1.25) both}
+.rise{animation:rise .7s cubic-bezier(.2,.8,.3,1) both}
+.wipe-c{animation:wipeC .9s cubic-bezier(.6,0,.2,1) both}
+.wipe-r{animation:wipeR .7s cubic-bezier(.45,0,.3,1) both}
+.name{left:0;width:1123px;top:309px;text-align:center;white-space:nowrap;font:700 37.33px/1.4 "Exo 2",sans-serif;color:#f4a663}
+.name span{display:inline-block;clip-path:inset(-30% 100% -30% 0);animation:write 1.3s cubic-bezier(.45,0,.3,1) 1.7s forwards}
+.para{left:257.9px;width:606.8px;top:382.8px;text-align:center;font-size:21.11px;line-height:1.355;color:#4f29b7}
+.para b{font-weight:700;color:#f4a764}
+.para .w{display:inline-block;opacity:0;animation:word .45s ease-out both}
+.shine{left:-40%;top:0;width:35%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75) 50%,transparent);transform:translateX(0) skewX(-12deg);opacity:0;animation:shine 1.3s ease-in-out 5.2s both;pointer-events:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes drop{from{opacity:0;transform:translateY(-26px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes wipeC{from{clip-path:inset(0 50% 0 50%)}to{clip-path:inset(0 0 0 0)}}
+@keyframes wipeR{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes write{to{clip-path:inset(-30% -5% -30% 0)}}
+@keyframes word{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes shine{0%{opacity:1;transform:translateX(0) skewX(-12deg)}100%{opacity:1;transform:translateX(480%) skewX(-12deg)}}
+/* end state, used for the PDF snapshot */
+.final,.final *{animation:none!important}
+.final .name span{clip-path:none}
+.final .para .w{opacity:1}
+.final .shine{display:none}
+
+/* ---------- controls ---------- */
+.actions{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:max-content;max-width:calc(100% - 32px);animation:fade .5s ease-out 1s both}
+.btn{min-height:44px;padding:0 20px;border-radius:12px;font:600 15px/1 var(--body);cursor:pointer;border:1.5px solid var(--lilac);background:rgba(28,12,82,.8);color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#2b1300}
+.btn:hover{filter:brightness(1.08)}
+.btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.btn:disabled{opacity:.6;cursor:progress}
+.status{position:fixed;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:3;margin:0;text-align:center;font-size:13px;color:var(--orange);min-height:1em;padding:0 16px}
+@media (max-width:640px){
+  .btn{min-height:40px;padding:0 14px;font-size:13px}
+  .actions{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}.px{animation:none!important}}
+</style>
+</head>
+<body>
+<h1 class="sr-only">Tuwaiq Club certificates</h1>
+<div class="pixels" id="pixels" aria-hidden="true"></div>
+
+<main class="frame" id="frame">
+  <div class="scaler" id="scaler">
+    <div class="card" id="cert" hidden>
+      <div class="scene" id="scene">
+        <img class="base" src="__base__" alt="">
+        <img class="drop" src="__logo1__" alt="Tuwaiq Club" style="__pos_logo1__;animation-delay:.35s">
+        <img class="drop" src="__logo2__" alt="Princess Nourah bint Abdulrahman University" style="__pos_logo2__;animation-delay:.5s">
+        <img class="rise" src="__title__" alt="Certificate of Appreciation" style="__pos_title__;animation-delay:.55s">
+        <img class="wipe-c" src="__divider__" alt="" style="__pos_divider__;animation-delay:.95s">
+        <img class="rise" src="__presents__" alt="Tuwaiq Club proudly presents this certificate to" style="__pos_presents__;animation-delay:1.25s">
+        <div class="abs name"><span id="c-name">Presenter Name</span></div>
+        <p class="abs para" id="c-para" style="margin:0"></p>
+        <img class="rise" src="__sign1__" alt="Club leader, Malak Almasabi" style="__pos_sign1__;animation-delay:var(--t-sign,3.6s)">
+        <img class="rise" src="__sign2__" alt="Vice club leader, Alreem Aldossary" style="__pos_sign2__;animation-delay:calc(var(--t-sign,3.6s) + .15s)">
+        <img class="wipe-r" src="__scrib1__" alt="" style="__pos_scrib1__;animation-delay:calc(var(--t-sign,3.6s) + .45s)">
+        <img class="wipe-r" src="__scrib2__" alt="" style="__pos_scrib2__;animation-delay:calc(var(--t-sign,3.6s) + 1s)">
+        <div class="abs shine"></div>
+      </div>
+    </div>
+  </div>
+  <section class="tty" id="tty" aria-label="Certificate terminal">
+    <div class="tty-bar" aria-hidden="true">
+      <span class="tty-dot"></span><span class="tty-dot"></span><span class="tty-dot"></span>
+      <span class="tty-title">tuwaiq-club — certificates</span>
+    </div>
+    <div class="tty-out" id="tty-out" role="log" aria-live="polite"></div>
+  </section>
+</main>
+
+<div class="actions" id="actions" hidden>
+  <button class="btn primary" type="button" id="pdf">Download PDF</button>
+  <button class="btn" type="button" id="replay">↺ Replay</button>
+  <button class="btn" type="button" id="again">New certificate</button>
+</div>
+<p class="status" id="status" role="status"></p>
+
+<script>
+(function () {
+  /* Programs offered as one-tap choices. Edit this list to add or change programs.
+     Picking one fills its dates; typing any other program asks for the dates. */
+  const PROGRAMS = [
+    { name: 'Game Development Using Unity', from: '05/07/2026', to: '16/07/2026' },
+    { name: 'Edge AI Program', from: '12/10/2026', to: '15/10/2026' },
+    { name: 'Fundamentals of Mechatronics and Robotics', from: '02/08/2026', to: '20/08/2026' }
+  ];
+
+  const KEY_SOUNDS = __SOUNDS__;
+  const W = 1123, H = 794;
+  const $ = (id) => document.getElementById(id);
+  const frame = $('frame'), scaler = $('scaler'), tty = $('tty'), out = $('tty-out'), cert = $('cert');
+  const actions = $('actions'), scene = $('scene');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let data = null;
+
+  /* ---------- stage squares ---------- */
+  (function pixels() {
+    const box = $('pixels'), cols = ['#9c75ff', '#57e4d9', '#b9a6f5', '#7b55e8', '#9c75ff'];
+    const spots = [[4,8,64],[12,70,38],[88,12,52],[93,62,30],[78,86,70],[22,90,26],[50,4,22],[62,94,34],[3,44,30],[96,36,22],[34,16,18],[70,20,16]];
+    spots.forEach(([x, y, s], i) => {
+      const d = document.createElement('i');
+      d.className = 'px';
+      d.style.cssText = 'left:' + x + '%;top:' + y + '%;width:' + s + 'px;height:' + s + 'px;--c:' + cols[i % cols.length] +
+        ';--o:' + (0.12 + (i % 4) * 0.05) + ';--d:' + (11 + (i % 5) * 3) + 's;--dl:-' + i * 1.7 + 's;--dx:' + ((i % 2 ? -1 : 1) * (8 + i)) + 'px;--dy:' + (-14 - (i % 3) * 10) + 'px;--r:' + ((i % 2 ? -1 : 1) * 10) + 'deg';
+      box.appendChild(d);
+    });
+  })();
+
+  /* ---------- layout: scale the 1123×794 certificate to fit ---------- */
+  let s = 1, offX = 0, offY = 0, phase = 'term';
+  function layout() {
+    const vw = frame.clientWidth, vh = frame.clientHeight;
+    const reserve = vw < 640 ? 70 : 84;
+    s = Math.min((vw - 32) / W, (vh - 32 - reserve) / H);
+    offX = (vw - W * s) / 2;
+    offY = Math.max(16, (vh - reserve - H * s) / 2);
+    scaler.style.transform = 'translate(' + offX + 'px,' + offY + 'px) scale(' + s + ')';
+    const narrow = vw < 700;
+    const fs = narrow ? 13.5 : Math.min(18, Math.max(14, vw / 70));
+    tty.style.setProperty('--fs', fs + 'px');
+    tty.style.setProperty('--bar-h', Math.round(fs * 2.7) + 'px');
+    tty.style.setProperty('--dot', Math.round(fs * 0.72) + 'px');
+    if (phase === 'term') {
+      const tw = narrow ? vw - 24 : Math.min(780, vw - 64);
+      const th = narrow ? Math.min(vh - 24, 560) : Math.min(vh - 64, 520);
+      place({ left: (vw - tw) / 2, top: (vh - th) / 2, width: tw, height: th });
+    }
+  }
+  function cardRect() { return { left: offX, top: offY, width: W * s, height: H * s }; }
+  function place(r) { for (const k in r) tty.style[k] = r[k] + 'px'; }
+  new ResizeObserver(layout).observe(frame);
+  window.addEventListener('resize', layout);
+
+  /* ---------- keyboard sounds (CC0 Cherry recordings) ---------- */
+  let ctx = null, regular = [], heavy = [], lastBuf = null;
+  function unlock() {
+    if (ctx) { if (ctx.state !== 'running') ctx.resume(); return; }
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const bytes = (uri) => Uint8Array.from(atob(uri.split(',')[1]), (c) => c.charCodeAt(0)).buffer;
+      Promise.all(KEY_SOUNDS.map((uri) => ctx.decodeAudioData(bytes(uri))))
+        .then((bufs) => { regular = bufs.slice(0, -3); heavy = bufs.slice(-3); })
+        .catch(() => {});
+    } catch (e) { ctx = null; }
+  }
+  function key(kind) {
+    if (!ctx || ctx.state !== 'running' || !regular.length) return;
+    const pool = kind === 'key' ? regular : heavy;
+    let buf = pool[Math.floor(Math.random() * pool.length)];
+    if (buf === lastBuf && pool.length > 1) buf = pool[(pool.indexOf(buf) + 1) % pool.length];
+    lastBuf = buf;
+    const src = ctx.createBufferSource(), gain = ctx.createGain();
+    src.buffer = buf;
+    src.playbackRate.value = kind === 'key' ? 0.97 + Math.random() * 0.07 : kind === 'space' ? 0.88 : 0.82;
+    gain.gain.value = kind === 'key' ? 0.55 + Math.random() * 0.2 : 0.85;
+    src.connect(gain).connect(ctx.destination);
+    src.start();
+  }
+  window.addEventListener('pointerdown', unlock);
+  window.addEventListener('keydown', unlock);
+
+  /* ---------- terminal helpers ---------- */
+  const PROMPT = '<span class="ps">tuwaiq</span><span class="path"> ~/club </span><span class="ps">$ </span>';
+  let run = 0;
+  function line(text, cls) {
+    const d = document.createElement('div');
+    d.className = 'ln ' + (cls || '');
+    d.textContent = text;
+    out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+    return d;
+  }
+  async function typeCmd(text, id) {
+    const d = line('', 'cmd');
+    d.innerHTML = PROMPT + '<span class="typed"></span><span class="cursor"></span>';
+    const typed = d.querySelector('.typed');
+    await sleep(250);
+    for (const ch of text) {
+      if (id !== run) return;
+      typed.textContent += ch;
+      key(ch === ' ' ? 'space' : 'key');
+      out.scrollTop = out.scrollHeight;
+      await sleep(36 + (ch === ' ' ? 30 : 0) + Math.random() * 28);
+    }
+    await sleep(380);
+    key('enter');
+    d.querySelector('.cursor').remove();
+  }
+  function ask(opts) {
+    return new Promise((resolve) => {
+      const d = line('', 'ask');
+      d.innerHTML = '<label for="' + opts.id + '"><span class="q">?</span> ' + opts.label + ' <span class="arrow">›</span> </label>';
+      const input = document.createElement('input');
+      input.id = opts.id; input.className = 'tty-input'; input.autocomplete = 'off'; input.spellcheck = false;
+      input.maxLength = opts.max || 40; input.placeholder = opts.placeholder || '';
+      if (opts.inputmode) input.inputMode = opts.inputmode;
+      input.setAttribute('enterkeyhint', 'next');
+      d.appendChild(input);
+      let chips = null, err = null, picked = null;
+      if (opts.choices) {
+        chips = document.createElement('div');
+        chips.className = 'choices';
+        opts.choices.forEach((c) => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'chip'; b.textContent = c.label;
+          b.addEventListener('click', () => { input.value = c.label; picked = c; key('key'); submit(); });
+          chips.appendChild(b);
+        });
+        out.appendChild(chips);
+      }
+      const fit = () => { input.style.width = Math.max(input.placeholder.length, input.value.length) + 1.5 + 'ch'; };
+      fit();
+      input.addEventListener('input', () => { picked = null; fit(); });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submit(); }
+        else if (e.key.length === 1) key(e.key === ' ' ? 'space' : 'key');
+        else if (e.key === 'Backspace') key('key');
+      });
+      out.scrollTop = out.scrollHeight;
+      input.focus({ preventScroll: true });
+      function submit() {
+        const r = opts.validate(input.value, picked);
+        if (err) { err.remove(); err = null; }
+        if (r.error) { err = line('✗ ' + r.error, 'err'); key('enter'); input.focus({ preventScroll: true }); return; }
+        if (chips) chips.remove();
+        const a = document.createElement('span');
+        a.className = 'answer'; a.textContent = r.shown || r.value;
+        input.replaceWith(a);
+        key('enter');
+        resolve(r);
+      }
+    });
+  }
+  const tidy = (v) => v.trim().replace(/\s+/g, ' ');
+  const cap = (v) => v.split(/([ -])/).map((w) => (/[a-z]/i.test(w[0] || '') ? w[0].toUpperCase() + w.slice(1) : w)).join('');
+  const nameRule = (raw) => {
+    const v = tidy(raw);
+    if (!v) return { error: 'Type the presenter name, then press Enter.' };
+    if (/[؀-ۿ]/.test(v)) return { error: 'Type the name in English letters.' };
+    if (!/^[A-Za-zÀ-ɏ][A-Za-zÀ-ɏ'. -]*$/.test(v)) return { error: 'Use letters only for the name.' };
+    return { value: cap(v) };
+  };
+  const programRule = (raw, picked) => {
+    const v = tidy(raw);
+    if (picked) return { value: picked.program.name, program: picked.program };
+    if (!v) return { error: 'Pick a program below or type its name.' };
+    if (/[؀-ۿ]/.test(v)) return { error: 'Type the program name in English.' };
+    if (v.length < 3) return { error: 'That program name is too short.' };
+    const known = PROGRAMS.find((p) => p.name.toLowerCase() === v.toLowerCase());
+    return known ? { value: known.name, program: known } : { value: v };
+  };
+  function parseDate(raw) {
+    const m = tidy(raw).match(/^(\d{1,2})[\/\-. ](\d{1,2})[\/\-. ](\d{4})$/);
+    if (!m) return null;
+    const d = +m[1], mo = +m[2], y = +m[3];
+    const dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d || y < 2000 || y > 2100) return null;
+    return { text: String(d).padStart(2, '0') + '/' + String(mo).padStart(2, '0') + '/' + y, time: dt.getTime() };
+  }
+  const dateRule = (after) => (raw) => {
+    const p = parseDate(raw);
+    if (!p) return { error: 'Use day/month/year, like 05/07/2026.' };
+    if (after && p.time < after.time) return { error: 'The end date must be on or after ' + after.text + '.' };
+    return { value: p.text, date: p };
+  };
+  const hoursRule = (raw) => {
+    const v = tidy(raw);
+    if (!/^\d{1,3}$/.test(v) || +v < 1) return { error: 'Type the number of training hours, like 35.' };
+    return { value: String(+v) };
+  };
+
+  /* ---------- certificate ---------- */
+  function fillCert(d) {
+    const n = $('c-name');
+    n.textContent = d.name;
+    n.style.fontSize = '';
+    const p = $('c-para');
+    const parts = [
+      ['in recognition of their valuable contribution, exceptional effort, and dedication in presenting the '],
+      ['[ ' + d.program + ' ]', 1], [', conducted from '], ['[ ' + d.from + ' ]', 1], [' to '], ['[ ' + d.to + ' ]', 1], [',\n'],
+      ['with a total of '], ['[' + d.hours + ']', 1], [' training hours.\nWe sincerely appreciate your contribution and\nwish you continued success and achievement']
+    ];
+    p.textContent = '';
+    p.style.fontSize = '';
+    let i = 0;
+    parts.forEach(([text, hi]) => {
+      const host = hi ? p.appendChild(document.createElement('b')) : p;
+      text.split(/(\n)/).forEach((chunk) => {
+        if (chunk === '\n') { host.appendChild(document.createElement('br')); return; }
+        // one span per word (so words can fade in one by one), real spaces between them so lines wrap normally
+        (chunk.match(/\S+|\s+/g) || []).forEach((w) => {
+          if (/^\s/.test(w)) { host.appendChild(document.createTextNode(' ')); return; }
+          const span = document.createElement('span');
+          span.className = 'w'; span.textContent = w;
+          span.style.animationDelay = (2.75 + i++ * 0.022).toFixed(3) + 's';
+          host.appendChild(span);
+        });
+      });
+    });
+    scene.style.setProperty('--t-sign', Math.max(3.5, 2.95 + i * 0.022).toFixed(2) + 's');
+  }
+  function fitText() {
+    const n = $('c-name');
+    const max = 820;
+    if (n.offsetWidth > max) n.style.fontSize = 37.33 * max / n.offsetWidth + 'px';
+    const p = $('c-para');
+    let fs = 21.11;
+    while (p.offsetTop + p.offsetHeight > 628 && fs > 15) { fs -= 0.5; p.style.fontSize = fs + 'px'; }
+  }
+  function showCert() {
+    $('status').textContent = '';
+    cert.hidden = true;
+    void cert.offsetWidth;
+    cert.hidden = false;
+    fitText();
+  }
+
+  /* ---------- the run ---------- */
+  async function start() {
+    const id = ++run;
+    phase = 'term';
+    cert.hidden = true;
+    actions.hidden = true;
+    $('status').textContent = '';
+    out.textContent = '';
+    tty.hidden = false;
+    tty.classList.remove('out', 'morph');
+    layout();
+    await sleep(500);
+    await typeCmd('npx tuwaiq-certificate', id);
+    if (id !== run) return;
+    line('Tuwaiq Club · certificate of appreciation', 'muted');
+    const name = (await ask({ id: 'p-name', label: 'Presenter name', placeholder: 'e.g. Reef Albadrani', validate: nameRule })).value;
+    if (id !== run) return;
+    const prog = await ask({ id: 'p-program', label: 'Program', placeholder: 'pick one or type it', max: 80, validate: programRule,
+      choices: PROGRAMS.map((p) => ({ label: p.name, program: p })) });
+    if (id !== run) return;
+    let from, to;
+    if (prog.program) {
+      from = prog.program.from; to = prog.program.to;
+      line('  dates ' + from + ' → ' + to, 'muted');
+    } else {
+      const f = await ask({ id: 'p-from', label: 'Start date', placeholder: 'dd/mm/yyyy', max: 10, inputmode: 'numeric', validate: dateRule(null) });
+      if (id !== run) return;
+      const t = await ask({ id: 'p-to', label: 'End date', placeholder: 'dd/mm/yyyy', max: 10, inputmode: 'numeric', validate: dateRule(f.date) });
+      if (id !== run) return;
+      from = f.value; to = t.value;
+    }
+    const hours = (await ask({ id: 'p-hours', label: 'Training hours', placeholder: 'e.g. 35', max: 3, inputmode: 'numeric', validate: hoursRule })).value;
+    if (id !== run) return;
+    data = { name, program: prog.value, from, to, hours };
+    fillCert(data);
+
+    await typeCmd('npm run build', id);
+    const bar = line('', 'muted');
+    for (let i = 0; i <= 20; i++) {
+      if (id !== run) return;
+      bar.textContent = 'building  [' + '█'.repeat(i) + '░'.repeat(20 - i) + '] ' + String(i * 5).padStart(3) + '%';
+      await sleep(55);
+    }
+    await sleep(250);
+    line('✓ presenter ' + name, 'ok'); await sleep(240);
+    line('✓ program   ' + prog.value, 'ok'); await sleep(240);
+    line('✓ hours     ' + hours, 'ok'); await sleep(240);
+    line('✓ signed    Club leader · Vice club leader', 'ok'); await sleep(450);
+    await typeCmd('open certificate.pdf', id);
+    if (id !== run) return;
+    line('→ opening certificate...', 'hi');
+    await sleep(650);
+    if (id !== run) return;
+
+    phase = 'closing';
+    tty.classList.add('morph', 'out');
+    place(cardRect());
+    await sleep(760);
+    if (id !== run) return;
+    tty.hidden = true;
+    phase = 'cert';
+    showCert();
+    actions.hidden = false;
+  }
+
+  /* ---------- PDF export ---------- */
+  async function exportPdf() {
+    const btn = $('pdf'), status = $('status');
+    btn.disabled = true; btn.textContent = 'Preparing PDF…'; status.textContent = '';
+    // snapshot a hidden copy in its end state, so the on-screen certificate never changes
+    const shot = scene.cloneNode(true);
+    shot.removeAttribute('id');
+    shot.classList.add('final');
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-20000px;top:0;width:' + W + 'px;height:' + H + 'px;overflow:hidden;pointer-events:none';
+    holder.appendChild(shot);
+    document.body.appendChild(holder);
+    try {
+      await document.fonts.ready;
+      const img = await window.htmlToImage.toJpeg(shot, { width: W, height: H, pixelRatio: 2.5, quality: 0.95, backgroundColor: '#ffffff' });
+      const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'px', format: [W, H], hotfixes: ['px_scaling'] });
+      pdf.addImage(img, 'JPEG', 0, 0, W, H);
+      const filename = (data ? data.name : 'presenter').trim().replace(/\s+/g, '-') + '-certificate.pdf';
+      pdf.save(filename);
+      status.textContent = 'Saved ' + filename;
+    } catch (e) {
+      status.textContent = 'The PDF could not be created. Try again.';
+    } finally {
+      holder.remove();
+      btn.disabled = false; btn.textContent = 'Download PDF';
+    }
+  }
+  $('pdf').addEventListener('click', exportPdf);
+  $('replay').addEventListener('click', showCert);
+  $('again').addEventListener('click', start);
+  document.fonts.load('700 37px "Exo 2"', 'Aa');
+  document.fonts.load('21px "IBM Plex Sans"', 'Aa');
+  document.fonts.load('700 21px "IBM Plex Sans"', 'Aa');
+
+  // ?preview=1 shows the finished certificate straight away (for checking the layout)
+  const qs = new URLSearchParams(location.search);
+  if (qs.has('preview')) {
+    phase = 'cert'; tty.hidden = true; layout();
+    data = { name: qs.get('name') || 'Reef Albadrani', program: qs.get('program') || 'Fundamentals of Mechatronics and Robotics',
+      from: qs.get('from') || '02/08/2026', to: qs.get('to') || '20/08/2026', hours: qs.get('hours') || '2' };
+    fillCert(data);
+    document.fonts.ready.then(() => { showCert(); if (qs.has('final')) scene.classList.add('final'); actions.hidden = false; });
+    return;
+  }
+  layout();
+  start();
+})();
+</script>
+</body>
+</html>
