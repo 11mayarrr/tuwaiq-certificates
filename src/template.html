@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tuwaiq Club Certificates</title>
-<meta name="description" content="Tuwaiq Club certificate of appreciation generator">
+<title>Tuwaiq PNU Certificates</title>
+<meta name="description" content="Tuwaiq PNU Club certificate of appreciation generator">
 <meta name="theme-color" content="#1c0c52">
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -68,6 +68,8 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
 .wipe-r{animation:wipeR .7s cubic-bezier(.45,0,.3,1) both}
 .name{left:0;width:1123px;top:309px;text-align:center;white-space:nowrap;font:700 37.33px/1.4 "Exo 2",sans-serif;color:#f4a663}
 .name span{display:inline-block;clip-path:inset(-30% 100% -30% 0);animation:write 1.3s cubic-bezier(.45,0,.3,1) 1.7s forwards}
+.presents{left:250.5px;width:621.6px;top:268.9px;text-align:center;white-space:nowrap;font-size:16px;line-height:1.4;color:#4f29b8;transform:rotate(-.5deg)}
+.presents span{display:inline-block}
 .para{left:257.9px;width:606.8px;top:382.8px;text-align:center;font-size:21.11px;line-height:1.355;color:#4f29b7}
 .para b{font-weight:700;color:#f4a764}
 .para .w{display:inline-block;opacity:0;animation:word .45s ease-out both}
@@ -102,7 +104,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
 </style>
 </head>
 <body>
-<h1 class="sr-only">Tuwaiq Club certificates</h1>
+<h1 class="sr-only">Tuwaiq PNU certificates</h1>
 <div class="pixels" id="pixels" aria-hidden="true"></div>
 
 <main class="frame" id="frame">
@@ -114,7 +116,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
         <img class="drop" src="__logo2__" alt="Princess Nourah bint Abdulrahman University" style="__pos_logo2__;animation-delay:.5s">
         <img class="rise" src="__title__" alt="Certificate of Appreciation" style="__pos_title__;animation-delay:.55s">
         <img class="wipe-c" src="__divider__" alt="" style="__pos_divider__;animation-delay:.95s">
-        <img class="rise" src="__presents__" alt="Tuwaiq Club proudly presents this certificate to" style="__pos_presents__;animation-delay:1.25s">
+        <div class="abs presents"><span class="rise" style="animation-delay:1.25s">Tuwaiq PNU Club proudly presents this certificate to</span></div>
         <div class="abs name"><span id="c-name">Trainer Name</span></div>
         <p class="abs para" id="c-para" style="margin:0"></p>
         <img class="rise" src="__sign1__" alt="Club leader, Malak Almasabi" style="__pos_sign1__;animation-delay:var(--t-sign,3.6s)">
@@ -128,7 +130,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
   <section class="tty" id="tty" aria-label="Certificate terminal">
     <div class="tty-bar" aria-hidden="true">
       <span class="tty-dot"></span><span class="tty-dot"></span><span class="tty-dot"></span>
-      <span class="tty-title">tuwaiq-club — certificates</span>
+      <span class="tty-title">tuwaiq-pnu — certificates</span>
     </div>
     <div class="tty-out" id="tty-out" role="log" aria-live="polite"></div>
   </section>
@@ -224,7 +226,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
   window.addEventListener('keydown', unlock);
 
   /* ---------- terminal helpers ---------- */
-  const PROMPT = '<span class="ps">tuwaiq</span><span class="path"> ~/club </span><span class="ps">$ </span>';
+  const PROMPT = '<span class="ps">tuwaiq-pnu</span><span class="path"> ~/club </span><span class="ps">$ </span>';
   let run = 0;
   function line(text, cls) {
     const d = document.createElement('div');
@@ -371,9 +373,9 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
     tty.classList.remove('out', 'morph');
     layout();
     await sleep(500);
-    await typeCmd('npx tuwaiq-certificate', id);
+    await typeCmd('npx tuwaiq-pnu-certificate', id);
     if (id !== run) return;
-    line('Tuwaiq Club · certificate of appreciation', 'muted');
+    line('Tuwaiq PNU · certificate of appreciation', 'muted');
     const name = (await ask({ id: 'p-name', label: 'Trainer name', placeholder: 'e.g. Reef Albadrani', validate: nameRule })).value;
     if (id !== run) return;
     const prog = await ask({ id: 'p-program', label: 'Program', placeholder: 'pick below', max: 80, validate: programRule,
@@ -395,7 +397,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
     line('✓ trainer   ' + name, 'ok'); await sleep(240);
     line('✓ program   ' + prog.value, 'ok'); await sleep(240);
     line('✓ hours     ' + hours, 'ok'); await sleep(240);
-    line('✓ signed    Club leader · Vice club leader', 'ok'); await sleep(450);
+    line('✓ signed    PNU Tuwaiq member', 'ok'); await sleep(450);
     await typeCmd('open certificate.pdf', id);
     if (id !== run) return;
     line('→ opening certificate...', 'hi');

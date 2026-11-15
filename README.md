@@ -1,6 +1,6 @@
-# Tuwaiq Club Certificates
+# Tuwaiq PNU Certificates
 
-Certificate of Appreciation generator for Tuwaiq Club (supported by Tuwaiq Academy | PNU). The trainer types their name and picks their program in a terminal and their certificate builds itself with animation. The finished certificate downloads as an A4 PDF.
+Certificate of Appreciation generator for Tuwaiq PNU Club (supported by Tuwaiq Academy | PNU). The trainer types their name and picks their program in a terminal and their certificate builds itself with animation. The finished certificate downloads as an A4 PDF.
 
 - The design comes from the club's Canva certificate.
 - Names are never stored or sent anywhere; everything runs in the visitor's browser.
