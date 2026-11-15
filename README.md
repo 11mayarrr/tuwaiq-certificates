@@ -1,13 +1,13 @@
 # Tuwaiq Club Certificates
 
-Certificate of Appreciation generator for Tuwaiq Club (supported by Tuwaiq Academy | PNU). The presenter answers a few questions in a terminal (name, program, dates, training hours) and their certificate builds itself with animation. The finished certificate downloads as an A4 PDF.
+Certificate of Appreciation generator for Tuwaiq Club (supported by Tuwaiq Academy | PNU). The presenter types their name and picks their program in a terminal and their certificate builds itself with animation. The finished certificate downloads as an A4 PDF.
 
 - The design comes from the club's Canva certificate.
 - Names are never stored or sent anywhere; everything runs in the visitor's browser.
 
 ## Editing
 
-- **Programs list:** edit `PROGRAMS` near the top of the script in `src/template.html`. Picking a listed program fills its dates; any other program asks for the dates.
+- **Programs list:** edit `PROGRAMS` near the top of the script in `src/template.html`. Each program has its own dates and training hours; presenters can only pick from this list.
 - **Rebuild:** run `python src/build.py`. It writes `index.html`, a single file with the fonts and images built in. Then commit and push.
 - **Check the layout:** open `index.html?preview=1&name=Your%20Name` to jump straight to the finished certificate.
 
