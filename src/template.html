@@ -115,7 +115,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
         <img class="rise" src="__title__" alt="Certificate of Appreciation" style="__pos_title__;animation-delay:.55s">
         <img class="wipe-c" src="__divider__" alt="" style="__pos_divider__;animation-delay:.95s">
         <img class="rise" src="__presents__" alt="Tuwaiq Club proudly presents this certificate to" style="__pos_presents__;animation-delay:1.25s">
-        <div class="abs name"><span id="c-name">Presenter Name</span></div>
+        <div class="abs name"><span id="c-name">Trainer Name</span></div>
         <p class="abs para" id="c-para" style="margin:0"></p>
         <img class="rise" src="__sign1__" alt="Club leader, Malak Almasabi" style="__pos_sign1__;animation-delay:var(--t-sign,3.6s)">
         <img class="rise" src="__sign2__" alt="Vice club leader, Alreem Aldossary" style="__pos_sign2__;animation-delay:calc(var(--t-sign,3.6s) + .15s)">
@@ -143,7 +143,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
 
 <script>
 (function () {
-  /* The programs presenters can pick. Each one carries its own dates and training hours.
+  /* The programs trainers can pick. Each one carries its own dates and training hours.
      To add a program, add a line here (dates are day/month/year). */
   const PROGRAMS = [
     { name: 'Finnect FinTech | IoT', from: '01/11/2026', to: '02/11/2026', hours: '6' }
@@ -299,12 +299,12 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
   const cap = (v) => v.split(/([ -])/).map((w) => (/[a-z]/i.test(w[0] || '') ? w[0].toUpperCase() + w.slice(1) : w)).join('');
   const nameRule = (raw) => {
     const v = tidy(raw);
-    if (!v) return { error: 'Type the presenter name, then press Enter.' };
+    if (!v) return { error: 'Type the trainer name, then press Enter.' };
     if (/[؀-ۿ]/.test(v)) return { error: 'Type the name in English letters.' };
     if (!/^[A-Za-zÀ-ɏ][A-Za-zÀ-ɏ'. -]*$/.test(v)) return { error: 'Use letters only for the name.' };
     return { value: cap(v) };
   };
-  // presenters can only choose a listed program: tap it, or type its number or name
+  // trainers can only choose a listed program: tap it, or type its number or name
   const programRule = (raw, picked) => {
     if (picked) return { value: picked.program.name, program: picked.program };
     const v = tidy(raw).toLowerCase();
@@ -320,7 +320,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
     n.style.fontSize = '';
     const p = $('c-para');
     const parts = [
-      ['in recognition of their valuable contribution, exceptional effort, and dedication in presenting the '],
+      ['in recognition of their valuable contribution, exceptional effort, and dedication as a trainer in the '],
       ['[ ' + d.program + ' ]', 1], [', conducted from '], ['[ ' + d.from + ' ]', 1], [' to '], ['[ ' + d.to + ' ]', 1], [',\n'],
       ['with a total of '], ['[' + d.hours + ']', 1], [' training hours.\nWe sincerely appreciate your contribution and\nwish you continued success and achievement']
     ];
@@ -374,7 +374,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
     await typeCmd('npx tuwaiq-certificate', id);
     if (id !== run) return;
     line('Tuwaiq Club · certificate of appreciation', 'muted');
-    const name = (await ask({ id: 'p-name', label: 'Presenter name', placeholder: 'e.g. Reef Albadrani', validate: nameRule })).value;
+    const name = (await ask({ id: 'p-name', label: 'Trainer name', placeholder: 'e.g. Reef Albadrani', validate: nameRule })).value;
     if (id !== run) return;
     const prog = await ask({ id: 'p-program', label: 'Program', placeholder: 'pick below', max: 80, validate: programRule,
       choices: PROGRAMS.map((p) => ({ label: p.name, program: p })) });
@@ -392,7 +392,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
       await sleep(55);
     }
     await sleep(250);
-    line('✓ presenter ' + name, 'ok'); await sleep(240);
+    line('✓ trainer   ' + name, 'ok'); await sleep(240);
     line('✓ program   ' + prog.value, 'ok'); await sleep(240);
     line('✓ hours     ' + hours, 'ok'); await sleep(240);
     line('✓ signed    Club leader · Vice club leader', 'ok'); await sleep(450);
@@ -430,7 +430,7 @@ body{background:radial-gradient(120% 90% at 50% 40%,var(--stage-2) 0%,var(--stag
       const img = await window.htmlToImage.toJpeg(shot, { width: W, height: H, pixelRatio: 2.5, quality: 0.95, backgroundColor: '#ffffff' });
       const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'px', format: [W, H], hotfixes: ['px_scaling'] });
       pdf.addImage(img, 'JPEG', 0, 0, W, H);
-      const filename = (data ? data.name : 'presenter').trim().replace(/\s+/g, '-') + '-certificate.pdf';
+      const filename = (data ? data.name : 'trainer').trim().replace(/\s+/g, '-') + '-certificate.pdf';
       pdf.save(filename);
       status.textContent = 'Saved ' + filename;
     } catch (e) {
